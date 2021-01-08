@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
@@ -9,25 +10,33 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CodeChallenge.Repository
 {
+    /// <summary>
+    /// The requirements are for something scalable, so create a repository with an interface that 
+    /// would make sense for Azure blob storage. 
+    /// There could be an argument for caching intermediate versions of images without the watermark, for example. 
+    /// In reality, we would look at costs / benefits before spending time implementing it.
+    /// </summary>
     public class ImageRepository
     {
 
         private readonly string _imageSourcePath;
         private readonly string _imageCachePath;
-        private readonly Dictionary<ImageCacheKey, Guid> _chacheNames;
+        private readonly Dictionary<ImageCacheKey, Guid> _cacheNames;
+        private readonly ILogger<ImageRepository> _logger;
 
-        public ImageRepository()
+        public ImageRepository(ILogger<ImageRepository> logger)
         {
-            // Would be from appsettings for base path and source / cache (in Azure blob storage)
+            // Would be from appsettings for base path and source / cache, but har coded for now.
             string appBasePath = @"D:\Code\Atom";
             _imageSourcePath = Path.Combine(appBasePath, "product_images");
             _imageCachePath = Path.Combine(appBasePath, "cache_images");
-            _chacheNames = new Dictionary<ImageCacheKey, Guid>();
+            _cacheNames = new Dictionary<ImageCacheKey, Guid>();
+            _logger = logger;
         }
 
         public Stream GetSourceImageStream(string imageName)
         {
-            string filename = Path.Combine(_imageCachePath, imageName);
+            string filename = Path.Combine(_imageSourcePath, imageName);
             return File.OpenRead(filename);
         }
 
@@ -38,21 +47,39 @@ namespace CodeChallenge.Repository
             return File.OpenRead(filename);
         }
 
-        public void AddCacheImage(Stream image, ImageDetails details)
+        public async Task AddCacheImageAsync(Stream image, ImageDetails details)
         {
+            try
+            {
+                Guid name = new Guid();
+                string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
 
+                using (var fs = File.Create(filename))
+                {
+                    await image.CopyToAsync(fs);
+                    await image.FlushAsync();
+                }
+
+                // Now that the image is saved, add the description to the names cache.
+                _cacheNames.Add(new ImageCacheKey(details), name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error storing cache image", details);
+                throw;
+            }
         }
 
         public bool IsInCache(ImageDetails details)
         {
             var key = new ImageCacheKey(details);
-            return _chacheNames.ContainsKey(key);
+            return _cacheNames.ContainsKey(key);
         }
 
         private Guid ImageCacheName(ImageDetails details)
         {
             var key = new ImageCacheKey(details);
-            return _chacheNames[key];
+            return _cacheNames[key];
         }
 
         /// <summary>
