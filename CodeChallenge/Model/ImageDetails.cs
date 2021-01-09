@@ -12,7 +12,7 @@ namespace CodeChallenge.Model
     {
         [Required]
         public string ImageName { get; set; }
-        public string Type { get; set; }
+        public ImageType Type { get; set; }
         [Required]
         public int Width { get; set; }
         [Required]

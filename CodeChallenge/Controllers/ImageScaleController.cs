@@ -2,6 +2,7 @@
 using CodeChallenge.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace CodeChallenge.Controllers
 
         [HttpGet("{imageName}")]
         //public FileStreamResult Get(ImageDetails imageDetails)
-        public FileStreamResult Get(string imageName, string type, int width, int height, string watermark, string backgroundColour)
+        public FileStreamResult Get(string imageName, string type,  int width,  int height, string watermark,  string backgroundColour)
         {
             var stream = _imageRepository.GetSourceImageStream("01_04_2019_001103.png");
 
@@ -40,8 +41,12 @@ namespace CodeChallenge.Controllers
                 ImageName = imageName,
                 Type = type,
                 Width = width,
-                Height = height
+                Height = height,
+                Watermark = watermark,
+                BackgroundColour = backgroundColour
             };
+
+
 
             return new FileStreamResult(stream, $"image/png")
             {
