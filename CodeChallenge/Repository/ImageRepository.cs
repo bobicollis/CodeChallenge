@@ -16,7 +16,7 @@ namespace CodeChallenge.Repository
     /// There could be an argument for caching intermediate versions of images without the watermark, for example. 
     /// In reality, we would look at costs / benefits before spending time implementing it.
     /// </summary>
-    public class ImageRepository
+    public class ImageRepository : IImageRepository
     {
 
         private readonly string _imageSourcePath;
@@ -43,7 +43,7 @@ namespace CodeChallenge.Repository
         public Stream GetCacheImageStream(ImageDetails details)
         {
             Guid cacheName = ImageCacheName(details);
-            string filename =  Path.Combine(_imageCachePath, $"{cacheName}.{details.Type}");
+            string filename = Path.Combine(_imageCachePath, $"{cacheName}.{details.Type}");
             return File.OpenRead(filename);
         }
 
@@ -97,7 +97,7 @@ namespace CodeChallenge.Repository
 
             public bool Equals(ImageCacheKey other)
             {
-                return this.ImageDetails.Name == other.ImageDetails.Name
+                return this.ImageDetails.ImageName == other.ImageDetails.ImageName
                     && this.ImageDetails.Type == other.ImageDetails.Type
                     && this.ImageDetails.Width == other.ImageDetails.Width
                     && this.ImageDetails.Height == other.ImageDetails.Height
