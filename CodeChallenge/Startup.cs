@@ -1,4 +1,5 @@
 using CodeChallenge.Repository;
+using CodeChallenge.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,7 +29,10 @@ namespace CodeChallenge
         {
             services.AddControllers();
             services.AddSwaggerGen();
-            services.AddSingleton<IImageRepository, ImageRepository>();
+            services
+                .AddSingleton<IImageRepository, ImageRepository>()
+                .AddSingleton<IImageProcessorService, ImageProcessorService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

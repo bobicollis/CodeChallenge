@@ -1,11 +1,13 @@
 ﻿using CodeChallenge.Model;
 using CodeChallenge.Repository;
+using CodeChallenge.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -20,22 +22,27 @@ namespace CodeChallenge.Controllers
 
         private readonly ILogger<ImageScaleController> _logger;
         private readonly IImageRepository _imageRepository;
+        private readonly IImageProcessorService _imageProcessorService;
 
         public ImageScaleController(
             ILogger<ImageScaleController> logger,
-            IImageRepository imageRepository
+            IImageRepository imageRepository,
+            IImageProcessorService imageProcessorService
             )
         {
             _logger = logger;
             _imageRepository = imageRepository;
+            _imageProcessorService = imageProcessorService;
         }
 
         [HttpGet("{imageName}")]
-        //public FileStreamResult Get(ImageDetails imageDetails)
-        public FileStreamResult Get(string imageName, string type,  int width,  int height, string watermark,  string backgroundColour)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Get(string imageName, ImageType type,  int width,  int height, string watermark,  string backgroundColour)
         {
-            var stream = _imageRepository.GetSourceImageStream("01_04_2019_001103.png");
-
+            //var stream = _imageRepository.GetSourceImageStream("01_04_2019_001103.png");
             var imageDetails = new ImageDetails()
             {
                 ImageName = imageName,
@@ -46,14 +53,39 @@ namespace CodeChallenge.Controllers
                 BackgroundColour = backgroundColour
             };
 
-
-
-            return new FileStreamResult(stream, $"image/png")
+            try
             {
-                // todo: will expect the name to not include the file extension
-                FileDownloadName = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}"
-            };
+                Stream outStream;
+
+                if (_imageRepository.IsInCache(imageDetails))
+                {
+                    outStream = _imageRepository.GetCacheImageStream(imageDetails);
+                }
+                else
+                {
+                    var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName);
+                    string cacheFilename = _imageRepository.GetNewCacheFilenameForDetails(imageDetails);
+                    outStream = _imageProcessorService.ProcessImageAsync(stream, imageDetails, cacheFilename);
+                    _imageRepository.AddCacheDetails(cacheFilename, imageDetails);
+                }
+
+
+                string resultFilename = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}";
+
+                return new FileStreamResult(outStream, $"image/png") { FileDownloadName = resultFilename };
+            }
+            catch (SourceImageNotFoundException ex)
+            {
+                return NotFound(imageDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error producing image", imageDetails);
+                throw new Exception("Internal error processing image request.");
+            }
         }
 
+        private string FilenameForDetails(ImageDetails details) =>
+            $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
     }
 }

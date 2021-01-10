@@ -15,7 +15,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace CodeChallenge.Services
 {
-    public class ImageProcessorService
+    public class ImageProcessorService : IImageProcessorService
     {
         private readonly Font _font;
         private readonly ILogger<ImageProcessorService> _logger;
@@ -26,10 +26,10 @@ namespace CodeChallenge.Services
             _logger = logger;
         }
 
-        public Stream ProcessImage(Stream sourceStream, ImageDetails details)
+        public Stream ProcessImageAsync(Stream sourceStream, ImageDetails details, string cacheFilename)
         {
             // todo: requirements don't rule out enlarging an image!
-            IImageEncoder encoder = GetEncoder(details.Type);        
+            IImageEncoder encoder = GetEncoder(details.Type);
 
             using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(details.BackgroundColour)))
             using (Image sourceImage = Image.Load(sourceStream))
@@ -40,20 +40,24 @@ namespace CodeChallenge.Services
                     Mode = ResizeMode.Max,
                 }));
 
-                outImage.Mutate(ctx => ctx.DrawImage(sourceImage, CentredTopLeft(details.Width, details.Height, sourceImage.Width, sourceImage.Height), 0f));
+                outImage.Mutate(ctx => ctx.DrawImage(sourceImage, CentredTopLeft(details.Width, details.Height, sourceImage.Width, sourceImage.Height), 1f));
 
                 if (!string.IsNullOrEmpty(details.Watermark))
                 {
                     outImage.Mutate(ctx => ctx.ApplyScalingWaterMarkSimple(_font, details.Watermark, Color.Pink, 5));
                 }
 
-                var outStream = new MemoryStream();
-                outImage.Save(outStream, encoder);
-                return outStream;
+                //var outStream = new MemoryStream();
+                //outImage.Save(outStream, encoder);
+                //sourceImage.Save(outStream, encoder);
+                //outStream.Flush();
+                outImage.Save(cacheFilename, encoder);
+                //return outStream;
+                return File.OpenRead(cacheFilename);
             };
         }
 
-        private IImageEncoder GetEncoder(ImageType type) 
+        private IImageEncoder GetEncoder(ImageType type)
         {
             switch (type)
             {
@@ -72,6 +76,7 @@ namespace CodeChallenge.Services
         }
 
         private Point CentredTopLeft(int boundsWidth, int boundsHeight, int innerWidth, int innerHeght)
-            => new Point((innerWidth - boundsWidth) / 2, (innerHeght - boundsHeight) / 2); 
+            => new Point((boundsWidth - innerWidth) / 2, (boundsHeight - innerHeght) / 2);
+
     }
 }

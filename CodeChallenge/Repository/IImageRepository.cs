@@ -1,13 +1,13 @@
 ﻿using CodeChallenge.Model;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace CodeChallenge.Repository
 {
     public interface IImageRepository
     {
-        Task AddCacheImageAsync(Stream image, ImageDetails details);
+        void AddCacheDetails(string chacheFilename, ImageDetails details);
         Stream GetCacheImageStream(ImageDetails details);
+        string GetNewCacheFilenameForDetails(ImageDetails details);
         Stream GetSourceImageStream(string imageName);
         bool IsInCache(ImageDetails details);
     }
