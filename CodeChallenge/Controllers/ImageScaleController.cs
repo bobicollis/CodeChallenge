@@ -3,15 +3,9 @@ using CodeChallenge.Repository;
 using CodeChallenge.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Threading.Tasks;
 
 namespace CodeChallenge.Controllers
 {
@@ -53,6 +47,11 @@ namespace CodeChallenge.Controllers
                 BackgroundColour = backgroundColour
             };
 
+            if (!TryValidateModel(imageDetails, nameof(ImageDetails)))
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 Stream outStream;
@@ -69,7 +68,6 @@ namespace CodeChallenge.Controllers
                     _imageRepository.AddCacheDetails(cacheFilename, imageDetails);
                 }
 
-
                 string resultFilename = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}";
 
                 return new FileStreamResult(outStream, $"image/png") { FileDownloadName = resultFilename };
@@ -81,7 +79,7 @@ namespace CodeChallenge.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error producing image", imageDetails);
-                throw new Exception("Internal error processing image request.");
+                return Problem("Internal error processing image request.",null, StatusCodes.Status500InternalServerError);
             }
         }
 

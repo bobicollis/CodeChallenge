@@ -1,17 +1,12 @@
 ﻿using CodeChallenge.Model;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using SixLabors.ImageSharp.PixelFormats;
+using CodeChallenge.Utils;
 
 namespace CodeChallenge.Services
 {
@@ -31,7 +26,9 @@ namespace CodeChallenge.Services
             // todo: requirements don't rule out enlarging an image!
             IImageEncoder encoder = GetEncoder(details.Type);
 
-            using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(details.BackgroundColour)))
+            string backgroundColour = ColourParser.Parse(details.BackgroundColour);
+
+            using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(backgroundColour)))
             using (Image sourceImage = Image.Load(sourceStream))
             {
                 sourceImage.Mutate(ctx => ctx.Resize(new ResizeOptions()
