@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.IO;
 using CodeChallenge.Model;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CodeChallenge.Repository
 {
@@ -74,7 +70,7 @@ namespace CodeChallenge.Repository
         //{
         //    try
         //    {
-        //        Guid name = new Guid();
+        //        Guid name = Guid.NewGuid();
         //        string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
 
         //        using (var fs = File.Create(filename))
@@ -93,6 +89,11 @@ namespace CodeChallenge.Repository
         //    }
         //}
 
+        /// <summary>
+        /// This is a required hack due to not being able to get ImageSharp to write to a memory stream in time.
+        /// </summary>
+        /// <param name="details"></param>
+        /// <returns></returns>
         public string GetNewCacheFilenameForDetails(ImageDetails details)
         {
             Guid name = Guid.NewGuid();

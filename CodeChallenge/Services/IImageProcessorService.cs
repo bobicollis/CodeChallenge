@@ -1,6 +1,5 @@
 ﻿using CodeChallenge.Model;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace CodeChallenge.Services
 {
