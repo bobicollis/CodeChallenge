@@ -32,6 +32,7 @@ namespace CodeChallenge
             services
                 .AddSingleton<IImageRepository, ImageRepository>()
                 .AddSingleton<IImageProcessorService, ImageProcessorService>();
+            services.Configure<RepositoryLocationOptions>(Configuration.GetSection("RepositoryLocation"));
 
         }
 

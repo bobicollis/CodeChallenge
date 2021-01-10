@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using CodeChallenge.Model;
+using Microsoft.Extensions.Options;
 
 namespace CodeChallenge.Repository
 {
@@ -20,12 +21,10 @@ namespace CodeChallenge.Repository
         private readonly Dictionary<string, string> _cacheNames;
         private readonly ILogger<ImageRepository> _logger;
 
-        public ImageRepository(ILogger<ImageRepository> logger)
+        public ImageRepository(IOptions<RepositoryLocationOptions> options, ILogger<ImageRepository> logger)
         {
-            // Would be from appsettings for base path and source / cache, but har coded for now.
-            string appBasePath = @"D:\Code\Atom";
-            _imageSourcePath = Path.Combine(appBasePath, "product_images");
-            _imageCachePath = Path.Combine(appBasePath, "cache_images");
+            _imageSourcePath = options.Value.SourceImages;
+            _imageCachePath = options.Value.CacheImages;
             _cacheNames = new Dictionary<string, string>();
             _logger = logger;
         }
