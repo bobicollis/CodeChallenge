@@ -20,7 +20,7 @@ namespace CodeChallenge.Utils
         public static string Parse(string colour)
         {
             if (string.IsNullOrEmpty(colour)) return TRANSPARENT;
-            if (!hexRegex.IsMatch(colour)) return TRANSPARENT;
+            if (hexRegex.IsMatch(colour)) return colour.ToUpper();
             if (colour.Length == 6) return $"{colour}00";
             return TRANSPARENT;
         }

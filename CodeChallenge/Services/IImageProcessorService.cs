@@ -5,6 +5,6 @@ namespace CodeChallenge.Services
 {
     public interface IImageProcessorService
     {
-        Stream ProcessImageAsync(Stream sourceStream, ImageDetails details, string cacheFilename);
+        Stream ProcessImage(Stream sourceStream, ImageDetails details, string cacheFilename);
     }
 }

@@ -1,0 +1,169 @@
+{
+	"info": {
+		"_postman_id": "6b911cf0-91ba-4cee-b977-c83e028048b5",
+		"name": "ImageScale",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ImageScale GET",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/ImageScale/01_04_2019_001103.png?Type=png&Width=100&Height=100",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"ImageScale",
+						"01_04_2019_001103.png"
+					],
+					"query": [
+						{
+							"key": "Type",
+							"value": "png"
+						},
+						{
+							"key": "Width",
+							"value": "100"
+						},
+						{
+							"key": "Height",
+							"value": "100"
+						}
+					]
+				},
+				"description": "https://localhost::44374/api/ImageScale/ProductImage/01_04_2019_001103.png?Type=&Width=100&Height=100&Type=png"
+			},
+			"response": []
+		},
+		{
+			"name": "ImageScale GET watermark",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/ImageScale/01_04_2019_001103.png?Width=100&Height=100&Type=png&Watermark=TEST",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"ImageScale",
+						"01_04_2019_001103.png"
+					],
+					"query": [
+						{
+							"key": "Width",
+							"value": "100"
+						},
+						{
+							"key": "Height",
+							"value": "100"
+						},
+						{
+							"key": "Type",
+							"value": "png"
+						},
+						{
+							"key": "Watermark",
+							"value": "TEST"
+						}
+					]
+				},
+				"description": "https://localhost::44374/api/ImageScale/ProductImage/01_04_2019_001103.png?Type=&Width=100&Height=100&Type=png"
+			},
+			"response": []
+		},
+		{
+			"name": "ImageScale GET with colour",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/ImageScale/01_04_2019_001103.png?Type=png&Width=110&Height=110&BackgroundColour=00FFFF00",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"ImageScale",
+						"01_04_2019_001103.png"
+					],
+					"query": [
+						{
+							"key": "Type",
+							"value": "png"
+						},
+						{
+							"key": "Width",
+							"value": "110"
+						},
+						{
+							"key": "Height",
+							"value": "110"
+						},
+						{
+							"key": "BackgroundColour",
+							"value": "00FFFF00"
+						}
+					]
+				},
+				"description": "https://localhost::44374/api/ImageScale/ProductImage/01_04_2019_001103.png?Type=&Width=100&Height=100&Type=png"
+			},
+			"response": []
+		},
+		{
+			"name": "ImageScale GET with colour and watermark",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/ImageScale/01_04_2019_001103.png?Type=png&Width=100&Height=100&BackgroundColour=FFFFFFFF&watermark=TEST",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"ImageScale",
+						"01_04_2019_001103.png"
+					],
+					"query": [
+						{
+							"key": "Type",
+							"value": "png"
+						},
+						{
+							"key": "Width",
+							"value": "100"
+						},
+						{
+							"key": "Height",
+							"value": "100"
+						},
+						{
+							"key": "BackgroundColour",
+							"value": "FFFFFFFF"
+						},
+						{
+							"key": "watermark",
+							"value": "TEST"
+						}
+					]
+				},
+				"description": "https://localhost::44374/api/ImageScale/ProductImage/01_04_2019_001103.png?Type=&Width=100&Height=100&Type=png"
+			},
+			"response": []
+		}
+	]
+}

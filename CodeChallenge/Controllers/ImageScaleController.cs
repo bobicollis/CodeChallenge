@@ -64,7 +64,7 @@ namespace CodeChallenge.Controllers
                 {
                     var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName);
                     string cacheFilename = _imageRepository.GetNewCacheFilenameForDetails(imageDetails);
-                    outStream = _imageProcessorService.ProcessImageAsync(stream, imageDetails, cacheFilename);
+                    outStream = _imageProcessorService.ProcessImage(stream, imageDetails, cacheFilename);
                     _imageRepository.AddCacheDetails(cacheFilename, imageDetails);
                 }
 
