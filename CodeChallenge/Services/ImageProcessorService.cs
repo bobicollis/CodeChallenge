@@ -11,6 +11,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace CodeChallenge.Services
 {
@@ -25,26 +26,30 @@ namespace CodeChallenge.Services
             _logger = logger;
         }
 
-        public Stream ProcessImage(Stream sourceImage, ImageDetails details)
+        public Stream ProcessImage(Stream sourceStream, ImageDetails details)
         {
-            IImageEncoder encoder = GetEncoder(details.Type);
+            // todo: requirements don't rule out enlarging an image!
+            IImageEncoder encoder = GetEncoder(details.Type);        
 
-            using (Image image = Image.Load(sourceImage))
+            using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(details.BackgroundColour)))
+            using (Image sourceImage = Image.Load(sourceStream))
             {
-                image.Mutate(ctx => ctx.Resize(new ResizeOptions()
+                sourceImage.Mutate(ctx => ctx.Resize(new ResizeOptions()
                 {
                     Size = new Size(details.Width, details.Height),
-                    Mode = ResizeMode.Max,                   
+                    Mode = ResizeMode.Max,
                 }));
+
+                outImage.Mutate(ctx => ctx.DrawImage(sourceImage, CentredTopLeft(details.Width, details.Height, sourceImage.Width, sourceImage.Height), 0f));
 
                 if (!string.IsNullOrEmpty(details.Watermark))
                 {
-                    image.Mutate(ctx => ctx.ApplyScalingWaterMarkSimple(_font, details.Watermark, Color.Pink, 5));
+                    outImage.Mutate(ctx => ctx.ApplyScalingWaterMarkSimple(_font, details.Watermark, Color.Pink, 5));
                 }
 
-                var newStream = new MemoryStream();
-                image.Save(newStream, encoder);
-                return newStream;
+                var outStream = new MemoryStream();
+                outImage.Save(outStream, encoder);
+                return outStream;
             };
         }
 
@@ -66,5 +71,7 @@ namespace CodeChallenge.Services
             }
         }
 
+        private Point CentredTopLeft(int boundsWidth, int boundsHeight, int innerWidth, int innerHeght)
+            => new Point((innerWidth - boundsWidth) / 2, (innerHeght - boundsHeight) / 2); 
     }
 }
