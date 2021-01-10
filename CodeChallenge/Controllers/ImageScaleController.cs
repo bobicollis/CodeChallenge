@@ -36,7 +36,6 @@ namespace CodeChallenge.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult Get(string imageName, ImageType type, [FromQuery] int width, [FromQuery] int height, [FromQuery] string watermark, [FromQuery] string backgroundColour)
         {
-            //var stream = _imageRepository.GetSourceImageStream("01_04_2019_001103.png");
             var imageDetails = new ImageDetails()
             {
                 ImageName = imageName,
