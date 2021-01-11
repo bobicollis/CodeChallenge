@@ -137,7 +137,7 @@ namespace CodeChallenge.Controllers
             }
         }
 
-        private string FilenameForDetails(ImageDetails details) =>
+        public string FilenameForDetails(ImageDetails details) =>
             $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
     }
 }

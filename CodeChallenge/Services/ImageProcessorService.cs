@@ -51,7 +51,7 @@ namespace CodeChallenge.Services
             };
         }
 
-        private IImageEncoder GetEncoder(ImageType type)
+        public IImageEncoder GetEncoder(ImageType type)
         {
             switch (type)
             {
@@ -69,7 +69,7 @@ namespace CodeChallenge.Services
             }
         }
 
-        private Point CentredTopLeft(int boundsWidth, int boundsHeight, int innerWidth, int innerHeght)
+        public Point CentredTopLeft(int boundsWidth, int boundsHeight, int innerWidth, int innerHeght)
             => new Point((boundsWidth - innerWidth) / 2, (boundsHeight - innerHeght) / 2);
 
     }
