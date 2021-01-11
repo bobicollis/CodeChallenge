@@ -70,6 +70,7 @@ namespace CodeChallenge.Controllers
 
                 string resultFilename = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}";
 
+                //return new FileStreamResult(outStream, $"image/{imageDetails.Type}") { FileDownloadName = resultFilename };
                 return new FileStreamResult(outStream, $"image/png") { FileDownloadName = resultFilename };
             }
             catch (SourceImageNotFoundException ex)
@@ -84,7 +85,7 @@ namespace CodeChallenge.Controllers
             }
         }
 
-        public string FilenameForDetails(ImageDetails details) =>
+        private string FilenameForDetails(ImageDetails details) =>
             $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
     }
 }
