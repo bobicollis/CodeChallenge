@@ -21,39 +21,6 @@ namespace CodeChallenge.Services
             _logger = logger;
         }
 
-        public Stream ProcessImage(Stream sourceStream, ImageDetails details, string cacheFilename)
-        {
-            // todo: requirements don't rule out enlarging an image!
-            IImageEncoder encoder = GetEncoder(details.Type);
-
-            string backgroundColour = ColourParser.Parse(details.BackgroundColour);
-
-            using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(backgroundColour)))
-            using (Image sourceImage = Image.Load(sourceStream))
-            {
-                sourceImage.Mutate(ctx => ctx.Resize(new ResizeOptions()
-                {
-                    Size = new Size(details.Width, details.Height),
-                    Mode = ResizeMode.Max,
-                }));
-
-                outImage.Mutate(ctx => ctx.DrawImage(sourceImage, CentredTopLeft(details.Width, details.Height, sourceImage.Width, sourceImage.Height), 1f));
-
-                if (!string.IsNullOrEmpty(details.Watermark))
-                {
-                    outImage.Mutate(ctx => ctx.ApplyScalingWaterMarkSimple(_font, details.Watermark, Color.Pink, 5));
-                }
-
-                // This is and embarrassing hack where the processor is saving to the file system.
-                // Initially I was trying use Image.SaveAsync(Stream, Encoder) and return the stream for
-                // the repository to store, but I was spending too much time on it, and wanted to at least 
-                // present someting that worked!
-                outImage.Save(cacheFilename, encoder);
-
-                return File.OpenRead(cacheFilename);
-            };
-        }
-
         public Stream ProcessImage(Stream sourceStream, ImageDetails details)
         {
             // todo: requirements don't rule out enlarging an image!
