@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using System.IO;
 using CodeChallenge.Model;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace CodeChallenge.Repository
 {
@@ -12,20 +14,21 @@ namespace CodeChallenge.Repository
     /// would make sense for Azure blob storage. 
     /// There could be an argument for caching intermediate versions of images without the watermark, for example. 
     /// In reality, we would look at costs / benefits before spending time implementing it.
+    /// The data for image cache details is not persisted, so will be lost when restarting.
     /// </summary>
     public class ImageRepository : IImageRepository
     {
 
         private readonly string _imageSourcePath;
         private readonly string _imageCachePath;
-        private readonly Dictionary<string, string> _cacheNames;
+        private readonly ConcurrentDictionary<string, string> _cacheNames;
         private readonly ILogger<ImageRepository> _logger;
 
         public ImageRepository(IOptions<RepositoryLocationOptions> options, ILogger<ImageRepository> logger)
         {
             _imageSourcePath = options.Value.SourceImages;
             _imageCachePath = options.Value.CacheImages;
-            _cacheNames = new Dictionary<string, string>();
+            _cacheNames = new ConcurrentDictionary<string, string>();
             _logger = logger;
         }
 
@@ -52,6 +55,7 @@ namespace CodeChallenge.Repository
             try
             {
                 string filename = Path.Combine(_imageCachePath, cacheName);
+                _logger.LogDebug($"Using cached image for {details.ImageName}", details);
                 return File.OpenRead(filename);
             }
             catch (FileNotFoundException ex)
@@ -65,56 +69,42 @@ namespace CodeChallenge.Repository
             }
         }
 
-        //public async Task AddCacheImageAsync(FileStream image, ImageDetails details)
-        //{
-        //    try
-        //    {
-        //        Guid name = Guid.NewGuid();
-        //        string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
-
-        //        using (var fs = File.Create(filename))
-        //        {
-        //            await image.CopyToAsync(fs);
-        //            await image.FlushAsync();
-        //        }
-
-        //        // Now that the image is saved, add the description to the names cache.
-        //        _cacheNames.Add(new ImageCacheKey(details), name);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error storing cache image", details);
-        //        throw;
-        //    }
-        //}
-
-        /// <summary>
-        /// This is a required hack due to not being able to get ImageSharp to write to a memory stream in time.
-        /// </summary>
-        /// <param name="details"></param>
-        /// <returns></returns>
-        public string GetNewCacheFilenameForDetails(ImageDetails details)
+        public async Task AddCacheImageAsync(Stream image, ImageDetails details)
         {
-            Guid name = Guid.NewGuid();
-            return Path.Combine(_imageCachePath, $"{name}.{details.Type.ToString().ToLower()}");
-        }
+            try
+            {
+                string name = GetCacheFilenameForDetails(details);
+                string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
 
-        public void AddCacheDetails(string cacheFilename, ImageDetails details)
-        {
-            _logger.LogInformation($"Creating cache entry for {cacheFilename}", details);
-            _cacheNames.Add(GetKey(details), cacheFilename);
+                using (var fs = File.Create(filename))
+                {
+                    long location = image.Seek(0, SeekOrigin.Begin);
+                    await image.CopyToAsync(fs);
+                    await image.FlushAsync();
+                }
+
+                // Now that the image is saved, add the description to the names cache.
+                _cacheNames.TryAdd(GetKey(details), filename);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error storing cache image", details);
+                throw;
+            }
         }
 
         public bool IsInCache(ImageDetails details)
             => _cacheNames.ContainsKey(GetKey(details));
 
+        private string GetCacheFilenameForDetails(ImageDetails details)
+        {
+            Guid name = Guid.NewGuid();
+            return Path.Combine(_imageCachePath, $"{name}.{details.Type.ToString().ToLower()}");
+        }
+
         private string ImageCacheName(ImageDetails details)
             => _cacheNames[GetKey(details)];
 
-        /// <summary>
-        /// Hack to allow lookup of images by details without implementing a database. 
-        /// If we used details for filenames then crazy long watermark text could exceed max filename size.
-        /// </summary>
         private string GetKey(ImageDetails details)
             => $"{details.ImageName}^{details.Width}^{details.Height}^{details.Type}^{details.BackgroundColour}^{details.Watermark}";
     }

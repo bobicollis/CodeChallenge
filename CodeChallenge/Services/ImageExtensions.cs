@@ -8,6 +8,8 @@ namespace SixLabors.ImageSharp.Processing
     // Summary:
     //     Defines extensions that allow the application of resize operations on an SixLabors.ImageSharp.Image
     //     using Mutate/Clone.
+    //
+    // Lifted directly from the ImageSharp Samples projects
     public static class ResizeExtensions
     {
         public static IImageProcessingContext ApplyScalingWaterMarkSimple(this IImageProcessingContext processingContext,

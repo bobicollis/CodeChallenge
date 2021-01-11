@@ -54,6 +54,36 @@ namespace CodeChallenge.Services
             };
         }
 
+        public Stream ProcessImage(Stream sourceStream, ImageDetails details)
+        {
+            // todo: requirements don't rule out enlarging an image!
+            IImageEncoder encoder = GetEncoder(details.Type);
+
+            string backgroundColour = ColourParser.Parse(details.BackgroundColour);
+
+            using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(backgroundColour)))
+            using (Image sourceImage = Image.Load(sourceStream))
+            {
+                sourceImage.Mutate(ctx => ctx.Resize(new ResizeOptions()
+                {
+                    Size = new Size(details.Width, details.Height),
+                    Mode = ResizeMode.Max,
+                }));
+
+                outImage.Mutate(ctx => ctx.DrawImage(sourceImage, CentredTopLeft(details.Width, details.Height, sourceImage.Width, sourceImage.Height), 1f));
+
+                if (!string.IsNullOrEmpty(details.Watermark))
+                {
+                    outImage.Mutate(ctx => ctx.ApplyScalingWaterMarkSimple(_font, details.Watermark, Color.Pink, 5));
+                }
+
+                Stream outStream = new MemoryStream();
+                outImage.Save(outStream, encoder);
+
+                return outStream;
+            };
+        }
+
         private IImageEncoder GetEncoder(ImageType type)
         {
             switch (type)
