@@ -116,7 +116,6 @@ namespace CodeChallenge.Controllers
                 else
                 {
                     var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName);
-                    //string cacheFilename = _imageRepository.GetNewCacheFilenameForDetails(imageDetails);
                     outStream = _imageProcessorService.ProcessImage(stream, imageDetails);
                     await _imageRepository.AddCacheImageAsync(outStream, imageDetails);
                     outStream.Seek(0, SeekOrigin.Begin);

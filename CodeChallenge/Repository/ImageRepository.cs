@@ -71,10 +71,10 @@ namespace CodeChallenge.Repository
 
         public async Task AddCacheImageAsync(Stream image, ImageDetails details)
         {
+            string name = GetCacheFilenameForDetails(details);
+            string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
             try
             {
-                string name = GetCacheFilenameForDetails(details);
-                string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
 
                 using (var fs = File.Create(filename))
                 {
@@ -83,13 +83,15 @@ namespace CodeChallenge.Repository
                     await image.FlushAsync();
                 }
 
-                // Now that the image is saved, add the description to the names cache.
-                _cacheNames.TryAdd(GetKey(details), filename);
+                // Now that the file has been written successfully, add to the cache names lookup
+                if (!_cacheNames.TryAdd(GetKey(details), filename))
+                {
+                    _logger.LogWarning($"Failed to add {filename} to cache details, file will be innaccessible.", details);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error storing cache image", details);
-                throw;
+                _logger.LogError(ex, $"Error saving image to cache for filename {filename}. File if present may be corrupt.", details);
             }
         }
 
@@ -97,10 +99,7 @@ namespace CodeChallenge.Repository
             => _cacheNames.ContainsKey(GetKey(details));
 
         private string GetCacheFilenameForDetails(ImageDetails details)
-        {
-            Guid name = Guid.NewGuid();
-            return Path.Combine(_imageCachePath, $"{name}.{details.Type.ToString().ToLower()}");
-        }
+            => Path.Combine(_imageCachePath, $"{Guid.NewGuid()}.{details.Type.ToString().ToLower()}");
 
         private string ImageCacheName(ImageDetails details)
             => _cacheNames[GetKey(details)];
