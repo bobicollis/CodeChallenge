@@ -92,6 +92,7 @@ namespace CodeChallenge.Repository
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error saving image to cache for filename {filename}. File if present may be corrupt.", details);
+                throw ex;
             }
         }
 
