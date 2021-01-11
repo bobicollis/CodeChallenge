@@ -30,59 +30,6 @@ namespace CodeChallenge.Controllers
             _imageProcessorService = imageProcessorService;
         }
 
-        //[HttpGet("{imageName}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public IActionResult Get(string imageName, ImageType type, [FromQuery] int width, [FromQuery] int height, [FromQuery] string watermark, [FromQuery] string backgroundColour)
-        //{
-        //    var imageDetails = new ImageDetails()
-        //    {
-        //        ImageName = imageName,
-        //        Type = type,
-        //        Width = width,
-        //        Height = height,
-        //        Watermark = watermark,
-        //        BackgroundColour = backgroundColour
-        //    };
-
-        //    if (!TryValidateModel(imageDetails, nameof(ImageDetails)))
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        Stream outStream;
-
-        //        if (_imageRepository.IsInCache(imageDetails))
-        //        {
-        //            outStream = _imageRepository.GetCacheImageStream(imageDetails);
-        //        }
-        //        else
-        //        {
-        //            var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName);
-        //            string cacheFilename = _imageRepository.GetNewCacheFilenameForDetails(imageDetails);
-        //            outStream = _imageProcessorService.ProcessImage(stream, imageDetails, cacheFilename);
-        //            _imageRepository.AddCacheDetails(cacheFilename, imageDetails);
-        //        }
-
-        //        string resultFilename = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}";
-
-        //        return new FileStreamResult(outStream, $"image/png") { FileDownloadName = resultFilename };
-        //    }
-        //    catch (SourceImageNotFoundException ex)
-        //    {
-        //        return NotFound(imageDetails);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Unexpected error producing image", imageDetails);
-        //        return Problem("Internal error processing image request.",null, StatusCodes.Status500InternalServerError);
-        //    }
-        //}
-
         [HttpGet("{imageName}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
