@@ -86,7 +86,7 @@ namespace CodeChallenge.Repository
                 // Now that the file has been written successfully, add to the cache names lookup
                 if (!_cacheNames.TryAdd(GetKey(details), filename))
                 {
-                    _logger.LogWarning($"Failed to add {filename} to cache details, file will be innaccessible.", details);
+                    _logger.LogWarning($"Failed to add {filename} to cache details, file will be inaccessible.", details);
                 }
             }
             catch (Exception ex)

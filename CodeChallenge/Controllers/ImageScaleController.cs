@@ -1,6 +1,7 @@
 ﻿using CodeChallenge.Model;
 using CodeChallenge.Repository;
 using CodeChallenge.Services;
+using static CodeChallenge.Utils.FilenameResponse;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -52,39 +53,40 @@ namespace CodeChallenge.Controllers
                 return BadRequest(ModelState);
             }
 
+            Stream outStream = null;
+
             try
             {
-                Stream outStream;
-
                 if (_imageRepository.IsInCache(imageDetails))
                 {
                     outStream = _imageRepository.GetCacheImageStream(imageDetails);
                 }
                 else
                 {
-                    var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName);
-                    outStream = _imageProcessorService.ProcessImage(stream, imageDetails);
-                    await _imageRepository.AddCacheImageAsync(outStream, imageDetails);
-                    outStream.Seek(0, SeekOrigin.Begin);
+                    using (var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName))
+                    {
+                        outStream = _imageProcessorService.ProcessImage(stream, imageDetails);
+                        await _imageRepository.AddCacheImageAsync(outStream, imageDetails);
+                        outStream.Seek(0, SeekOrigin.Begin);
+                    }
                 }
 
-                string resultFilename = $"{imageDetails.ImageName}_scaled_{imageDetails.Width}_{imageDetails.Height}.{imageDetails.Type}";
+                string resultFilename = FilenameForImageDetails(imageDetails);
 
                 return new FileStreamResult(outStream, $"image/{imageDetails.Type}") { FileDownloadName = resultFilename };
             }
             catch (SourceImageNotFoundException ex)
             {
+                outStream?.DisposeAsync();
                 _logger.LogWarning(ex, $"Source image not found: {imageName}", imageDetails);
                 return NotFound(imageDetails);
             }
             catch (Exception ex)
             {
+                outStream?.DisposeAsync();
                 _logger.LogError(ex, "Unexpected error producing image", imageDetails);
                 return Problem("Internal error processing image request.", null, StatusCodes.Status500InternalServerError);
             }
         }
-
-        private string FilenameForDetails(ImageDetails details) =>
-            $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
     }
 }

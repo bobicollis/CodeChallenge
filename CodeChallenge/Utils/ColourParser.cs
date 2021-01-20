@@ -3,7 +3,7 @@
 namespace CodeChallenge.Utils
 {
     /// <summary>
-    /// Accepts a six or eight byte hex value, expecting alpha channel to be last byte.
+    /// Accepts a six or eight character hex value, expecting alpha channel to be last byte.
     /// An empty value is converted to transparent.
     /// </summary>
     public static class ColourParser
