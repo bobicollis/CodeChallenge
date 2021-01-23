@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using CodeChallenge.Model;
@@ -51,7 +50,7 @@ namespace CodeChallenge.Repository
 
         public Stream GetCacheImageStream(ImageDetails details)
         {
-            string cacheName = ImageCacheName(details);
+            string cacheName = GetImageCacheFilename(details);
             try
             {
                 string filename = Path.Combine(_imageCachePath, cacheName);
@@ -75,7 +74,6 @@ namespace CodeChallenge.Repository
             string filename = Path.Combine(_imageCachePath, $"{name}.{details.Type}");
             try
             {
-
                 using (var fs = File.Create(filename))
                 {
                     long location = image.Seek(0, SeekOrigin.Begin);
@@ -102,7 +100,7 @@ namespace CodeChallenge.Repository
         private string GetCacheFilenameForDetails(ImageDetails details)
             => Path.Combine(_imageCachePath, $"{Guid.NewGuid()}.{details.Type.ToString().ToLower()}");
 
-        private string ImageCacheName(ImageDetails details)
+        private string GetImageCacheFilename(ImageDetails details)
             => _cacheNames[GetKey(details)];
 
         private string GetKey(ImageDetails details)

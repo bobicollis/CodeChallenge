@@ -6,7 +6,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
-using CodeChallenge.Utils;
+using static CodeChallenge.Utils.ColourParser;
+using System.Threading.Tasks;
 
 namespace CodeChallenge.Services
 {
@@ -21,15 +22,15 @@ namespace CodeChallenge.Services
             _logger = logger;
         }
 
-        public Stream ProcessImage(Stream sourceStream, ImageDetails details)
+        public async Task<Stream> ProcessImageAsync(Stream sourceStream, ImageDetails details)
         {
             // todo: requirements don't rule out enlarging an image!
             IImageEncoder encoder = GetEncoder(details.Type);
 
-            string backgroundColour = ColourParser.Parse(details.BackgroundColour);
+            string backgroundColour = ParseHexColour(details.BackgroundColour);
 
             using (Image<Rgba32> outImage = new Image<Rgba32>(new Configuration(), details.Width, details.Height, Rgba32.ParseHex(backgroundColour)))
-            using (Image sourceImage = Image.Load(sourceStream))
+            using (Image sourceImage = await Image.LoadAsync(sourceStream))
             {
                 sourceImage.Mutate(ctx => ctx.Resize(new ResizeOptions()
                 {
@@ -45,7 +46,7 @@ namespace CodeChallenge.Services
                 }
 
                 Stream outStream = new MemoryStream();
-                outImage.Save(outStream, encoder);
+                await outImage.SaveAsync(outStream, encoder);
 
                 return outStream;
             };

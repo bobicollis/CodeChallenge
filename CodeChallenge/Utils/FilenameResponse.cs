@@ -8,7 +8,7 @@ namespace CodeChallenge.Utils
 {
     public static class FilenameResponse
     {
-        public static string FilenameForImageDetails(ImageDetails details) =>
-            $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
+        public static string FilenameForImageDetails(ImageDetails details)
+            => $"{details.ImageName}_scaled_{details.Width}_{details.Height}.{details.Type}";
     }
 }

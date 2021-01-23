@@ -36,7 +36,7 @@ namespace CodeChallenge.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Get(string imageName, ImageType type, [FromQuery] int width, [FromQuery] int height, [FromQuery] string watermark, [FromQuery] string backgroundColour)
+        public async Task<IActionResult> Get(string imageName, [FromQuery] ImageType type, [FromQuery] int width, [FromQuery] int height, [FromQuery] string watermark, [FromQuery] string backgroundColour)
         {
             var imageDetails = new ImageDetails()
             {
@@ -57,23 +57,18 @@ namespace CodeChallenge.Controllers
 
             try
             {
-                if (_imageRepository.IsInCache(imageDetails))
+                // If the requested image is in the cache, return the cached image.
+                if (_imageRepository.IsInCache(imageDetails)) return SuccessFileStreamResult(_imageRepository.GetCacheImageStream(imageDetails), imageDetails);
+
+                // The requested image isn't in the cache, so make, store and return it.
+                using (var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName))
                 {
-                    outStream = _imageRepository.GetCacheImageStream(imageDetails);
-                }
-                else
-                {
-                    using (var stream = _imageRepository.GetSourceImageStream(imageDetails.ImageName))
-                    {
-                        outStream = _imageProcessorService.ProcessImage(stream, imageDetails);
-                        await _imageRepository.AddCacheImageAsync(outStream, imageDetails);
-                        outStream.Seek(0, SeekOrigin.Begin);
-                    }
+                    outStream = await _imageProcessorService.ProcessImageAsync(stream, imageDetails);
+                    await _imageRepository.AddCacheImageAsync(outStream, imageDetails);
+                    outStream.Seek(0, SeekOrigin.Begin);
                 }
 
-                string resultFilename = FilenameForImageDetails(imageDetails);
-
-                return new FileStreamResult(outStream, $"image/{imageDetails.Type}") { FileDownloadName = resultFilename };
+                return SuccessFileStreamResult(outStream, imageDetails);
             }
             catch (SourceImageNotFoundException ex)
             {
@@ -88,5 +83,8 @@ namespace CodeChallenge.Controllers
                 return Problem("Internal error processing image request.", null, StatusCodes.Status500InternalServerError);
             }
         }
+
+        private FileStreamResult SuccessFileStreamResult(Stream stream, ImageDetails imageDetails)
+            => new FileStreamResult(stream, $"image/{imageDetails.Type}") { FileDownloadName = FilenameForImageDetails(imageDetails) };
     }
 }

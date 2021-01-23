@@ -20,9 +20,6 @@ namespace SixLabors.ImageSharp.Processing
         {
             Size imgSize = processingContext.GetCurrentSize();
 
-            float targetWidth = imgSize.Width - (padding * 2);
-            float targetHeight = imgSize.Height - (padding * 2);
-
             // measure the text size
             FontRectangle size = TextMeasurer.Measure(text, new RendererOptions(font));
 
