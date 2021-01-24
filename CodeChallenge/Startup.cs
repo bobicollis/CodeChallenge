@@ -50,7 +50,7 @@ namespace CodeChallenge
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "CodeChallenge API V1");
             });
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // This should be done in the reverse proxy https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl
             app.UseRouting();
 
             //app.UseAuthorization();
